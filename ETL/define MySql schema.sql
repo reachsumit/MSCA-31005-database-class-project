@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`cities` (
   `city` VARCHAR(45) NULL,
   `city_id` INT(11) NOT NULL,
   `country` VARCHAR(15) NULL,
-  `distance` DECIMAL(10,2) NULL,
+  `distance` DECIMAL(12,3) NULL,
   `latitude` DECIMAL(12,8) NULL,
   `localized_country_name` VARCHAR(45) NULL,
   `longitude` DECIMAL(12,8) NULL,
@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`cities` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
+
 -- -----------------------------------------------------
 -- Table `dbprojectAWS`.`groups`
 -- -----------------------------------------------------
@@ -55,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`groups` (
   `category.name` VARCHAR(45) NULL,
   `category.shortname` VARCHAR(45) NULL,
   `city_id` INT(11) NOT NULL,
-  `city` VARCHAR(75) NOT NULL,
+  `city` VARCHAR(75) NULL,
   `country` VARCHAR(45) NULL,
   `created` DATETIME NULL,
   `description` LONGTEXT NULL,
@@ -88,17 +89,36 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`groups` (
   `visibility` ENUM('members', 'public', 'public_limited', 'others'),
   `who` VARCHAR(85) NULL,
   PRIMARY KEY (`group_id`),
-  INDEX `fk_groups_categories_idx` (`category_id` ASC),
   CONSTRAINT `fk_groups_cities`
     FOREIGN KEY (`city_id`)
     REFERENCES `dbprojectAWS`.`cities` (`city_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_groups_categories`
     FOREIGN KEY (`category_id`)
     REFERENCES `dbprojectAWS`.`categories` (`category_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
+
+
+
+-- -----------------------------------------------------
+-- Table `dbprojectAWS`.`groups_topics`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`groups_topics` (
+  `topic_id` INT(11) NOT NULL,
+  `topic_key` VARCHAR(60) NULL,
+  `topic_name` VARCHAR(60) NULL,
+  `group_id` INT(11) NOT NULL,
+  PRIMARY KEY (`topic_id`,`group_id`),
+  INDEX `fk_groups_topics_idx` (`group_id` ASC),
+  CONSTRAINT `fk_groups_topics_idx`
+    FOREIGN KEY (`group_id`)
+    REFERENCES `dbprojectAWS`.`groups` (`group_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
@@ -250,25 +270,6 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
--- Table `dbprojectAWS`.`groups_topics`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`groups_topics` (
-  `topic_id` INT(11) NOT NULL,
-  `topic_key` VARCHAR(60) NULL,
-  `topic_name` VARCHAR(60) NULL,
-  `group_id` INT(11) NOT NULL,
-  PRIMARY KEY (`topic_id`,`group_id`),
-  INDEX `fk_groups_topics_idx` (`group_id` ASC),
-  CONSTRAINT `fk_groups_topics_idx`
-    FOREIGN KEY (`group_id`)
-    REFERENCES `dbprojectAWS`.`groups` (`group_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
 -- Table `dbprojectAWS`.`members_topics`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`members_topics` (
@@ -330,8 +331,3 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`sub_topics` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
