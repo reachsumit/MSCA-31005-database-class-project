@@ -46,6 +46,51 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`cities` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
+-- -----------------------------------------------------
+-- Table `dbprojectAWS`.`main_topics`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`main_topics` (
+  `main_topic_id` INT(11) NOT NULL,
+  `topic_name` VARCHAR(99) NULL,
+  `topic_key` VARCHAR(99) NULL,
+  `shortname` VARCHAR(99) NULL,
+  `sort_name` VARCHAR(99) NULL,
+  `icon` VARCHAR(499) NULL,
+  `photo` VARCHAR(499) NULL,
+  `category_id` INT(11) NOT NULL,
+  PRIMARY KEY (`main_topic_id`,`category_id`),
+  INDEX `fk_category_main_topics_idx` (`category_id` ASC),
+  CONSTRAINT `fk_category_main_topics_idx`
+    FOREIGN KEY (`category_id`)
+    REFERENCES `dbprojectAWS`.`categories` (`category_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
+
+-- -----------------------------------------------------
+-- Table `dbprojectAWS`.`sub_topics`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`sub_topics` (
+  `sub_topic_id` INT(11) NOT NULL,
+  `description` VARCHAR(499) NULL,
+  `link` VARCHAR(99) NULL,
+  `members` INT(11) NULL,
+  `sub_topic_name` VARCHAR(99) NULL,
+#  `updated` DATETIME NULL,
+  `urlkey` VARCHAR(99) NULL,
+  `main_topic_id` INT(11) NOT NULL,
+  PRIMARY KEY (`sub_topic_id`),
+  INDEX `fk_sub_topic_main_topics_idx` (`main_topic_id` ASC),
+  CONSTRAINT `fk_sub_topic_main_topics_idx`
+    FOREIGN KEY (`main_topic_id`)
+    REFERENCES `dbprojectAWS`.`main_topics` (`main_topic_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
+
+
 
 -- -----------------------------------------------------
 -- Table `dbprojectAWS`.`groups`
@@ -117,6 +162,11 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`groups_topics` (
   CONSTRAINT `fk_groups_topics_idx`
     FOREIGN KEY (`group_id`)
     REFERENCES `dbprojectAWS`.`groups` (`group_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_groups_subtopics_idx`
+    FOREIGN KEY (`topic_id`)
+    REFERENCES `dbprojectAWS`.`sub_topics` (`sub_topic_id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
@@ -192,7 +242,7 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`events` (
   `group.urlname` VARCHAR(90) NULL,
   `group.who` VARCHAR(45) NULL,
   `headcount` INT(11) NULL,
- # `how_to_find_us` VARCHAR(250) NULL DEFAULT 'not_found.',
+  `how_to_find_us` VARCHAR(250) NULL DEFAULT 'not_found.',
   `maybe_rsvp_count` INT(11) NULL,
   `event_name` VARCHAR(95) NULL,
 #  `photo_url` VARCHAR(200) NULL,
@@ -207,13 +257,13 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`events` (
 #  `venue.address_2` VARCHAR(200) NULL,
   `venue.city` VARCHAR(45) NULL,
   `venue.country` VARCHAR(45) NULL,
-  `venue_id` INT(11) NOT NULL,
+  `venue_id` INT(11) NULL,
   `venue.lat` DECIMAL(12,8) NULL,
   `venue.localized_country_name` VARCHAR(45) NULL,
   `venue.lon` DECIMAL(11,8) NULL,
   `venue.name` VARCHAR(300) NULL,
   `venue.phone` BIGINT(20) NULL,
-  `venue.repinned` TINYINT(4) NULL,
+  `venue.repinned` VARCHAR(45) NULL,
   `venue.state` VARCHAR(45) NULL,
   `venue.zip` INT(11) NULL,
   `visibility` ENUM('public', 'public_limited', 'members', 'others') NULL,
@@ -221,12 +271,6 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`events` (
 #  `why` VARCHAR(500) NULL,
   `yes_rsvp_count` INT(11) NULL,
   PRIMARY KEY (`event_id`),
-  INDEX `fk_events_groups_idx` (`group_id` ASC),
-  CONSTRAINT `fk_events_venues`
-    FOREIGN KEY (`venue_id`)
-    REFERENCES `dbprojectAWS`.`venues` (`venue_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_events_groups_idx`
     FOREIGN KEY (`group_id`)
     REFERENCES `dbprojectAWS`.`groups` (`group_id`)
@@ -258,7 +302,7 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`members` (
 #  `topics` VARCHAR(5000) NULL,
   `visited` DATETIME NULL,
   `group_id` INT(11) NOT NULL,
-  PRIMARY KEY (`member_id`),
+  PRIMARY KEY (`member_id`,`group_id`),
   INDEX `fk_members_groups_idx` (`group_id` ASC),
   CONSTRAINT `fk_members_groups_idx`
     FOREIGN KEY (`group_id`)
@@ -282,51 +326,6 @@ CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`members_topics` (
   CONSTRAINT `fk_members_topics_idx`
     FOREIGN KEY (`member_id`)
     REFERENCES `dbprojectAWS`.`members` (`member_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
--- Table `dbprojectAWS`.`main_topics`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`main_topics` (
-  `main_topic_id` INT(11) NOT NULL,
-  `topic_name` VARCHAR(99) NULL,
-  `topic_key` VARCHAR(99) NULL,
-  `shortname` VARCHAR(99) NULL,
-  `sort_name` VARCHAR(99) NULL,
-  `icon` VARCHAR(499) NULL,
-  `photo` VARCHAR(499) NULL,
-  `category_id` INT(11) NOT NULL,
-  PRIMARY KEY (`main_topic_id`,`category_id`),
-  INDEX `fk_category_main_topics_idx` (`category_id` ASC),
-  CONSTRAINT `fk_category_main_topics_idx`
-    FOREIGN KEY (`category_id`)
-    REFERENCES `dbprojectAWS`.`categories` (`category_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
--- -----------------------------------------------------
--- Table `dbprojectAWS`.`sub_topics`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `dbprojectAWS`.`sub_topics` (
-  `sub_topic_id` INT(11) NOT NULL,
-  `description` VARCHAR(499) NULL,
-  `link` VARCHAR(99) NULL,
-  `members` INT(11) NULL,
-  `sub_topic_name` VARCHAR(99) NULL,
-  `updated` DATETIME NULL,
-  `urlkey` VARCHAR(99) NULL,
-  `main_topic_id` INT(11) NOT NULL,
-  PRIMARY KEY (`sub_topic_id`),
-  INDEX `fk_sub_topic_main_topics_idx` (`main_topic_id` ASC),
-  CONSTRAINT `fk_sub_topic_main_topics_idx`
-    FOREIGN KEY (`main_topic_id`)
-    REFERENCES `dbprojectAWS`.`main_topics` (`main_topic_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
